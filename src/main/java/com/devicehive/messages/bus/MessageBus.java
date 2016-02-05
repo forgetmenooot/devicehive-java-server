@@ -1,6 +1,7 @@
 package com.devicehive.messages.bus;
 
 import com.devicehive.configuration.Constants;
+import com.devicehive.messages.kafka.IRabbitProducer;
 import com.devicehive.messages.kafka.KafkaProducer;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
@@ -21,15 +22,21 @@ public class MessageBus {
     @Autowired
     private KafkaProducer kafkaProducer;
 
+    @Autowired
+    private IRabbitProducer rabbitProducer;
+
     public <T extends HazelcastEntity> void publish(T hzEntity) {
         if (hzEntity instanceof DeviceNotification) {
+            rabbitProducer.produceDeviceNotificationMsg((DeviceNotification) hzEntity);
             kafkaProducer.produceDeviceNotificationMsg((DeviceNotification) hzEntity, Constants.NOTIFICATION_TOPIC_NAME);
         } else if (hzEntity instanceof DeviceCommand) {
             DeviceCommand command = (DeviceCommand) hzEntity;
             if (command.getIsUpdated()) {
+                rabbitProducer.produceDeviceCommandUpdateMsg(command);
                 kafkaProducer.produceDeviceCommandUpdateMsg(command, Constants.COMMAND_UPDATE_TOPIC_NAME);
             } else {
-                kafkaProducer.produceDeviceCommandMsg((DeviceCommand) hzEntity, Constants.COMMAND_TOPIC_NAME);
+                rabbitProducer.produceDeviceCommandMsg(command);
+                kafkaProducer.produceDeviceCommandMsg(command, Constants.COMMAND_TOPIC_NAME);
             }
         } else {
             final String msg = String.format("Unsupported hazelcast entity class: %s", hzEntity.getClass());

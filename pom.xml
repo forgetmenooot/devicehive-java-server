@@ -48,6 +48,7 @@
         <jackson2.version>2.4.5</jackson2.version>
         <hibernate-version>4.3.5.Final</hibernate-version>
         <swagger.version>1.5.4</swagger.version>
+        <rabbit.version>3.6.0</rabbit.version>
 
         <scala-binaries.version>2.10</scala-binaries.version>
 
@@ -457,6 +458,13 @@
                 <artifactId>spring-orm</artifactId>
                 <version>${springframework.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>3.6.0</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
