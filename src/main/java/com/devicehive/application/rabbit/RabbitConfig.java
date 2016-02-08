@@ -1,15 +1,21 @@
-package com.devicehive.application.kafka;
+package com.devicehive.application.rabbit;
 
+import com.devicehive.messages.common.CommandConsumer;
+import com.devicehive.messages.common.CommandUpdateConsumer;
+import com.devicehive.messages.common.IConsumer;
+import com.devicehive.messages.common.NotificationConsumer;
 import com.devicehive.messages.kafka.*;
+import com.devicehive.messages.rabbit.*;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import com.rabbitmq.client.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -39,7 +45,7 @@ public class RabbitConfig {
     @Value("${rabbit.recovery.enabled}")
     private Boolean recoveryEnabled;
 
-    @Value("${rabbit.recovery.interval}")
+    @Value("${rabbit.recovery.interval:10000}")
     private Integer recoverInterval;
 
     @Autowired
@@ -54,19 +60,22 @@ public class RabbitConfig {
         return new EntityToByteConverter();
     }
 
-    @Bean
-    public RabbitCommandUpdateConsumer provideCommandUpdateConsumer() {
-        return new RabbitCommandUpdateConsumer();
+    @Bean(name="commandUpdateNotificationConsumer")
+    @Lazy(false)
+    public IConsumer provideCommandUpdateConsumer() {
+        return new CommandUpdateConsumer();
     }
 
-    @Bean
-    public RabbitCommandConsumer provideCommandConsumer() {
-        return new RabbitCommandConsumer();
+    @Bean(name="commandNotificationConsumer")
+    @Lazy(false)
+    public IConsumer provideCommandConsumer() {
+        return new CommandConsumer();
     }
 
-    @Bean
-    public RabbitNotificationConsumer provideDeviceConsumer() {
-        return new RabbitNotificationConsumer();
+    @Bean(name="deviceNotificationConsumer")
+    @Lazy(false)
+    public IConsumer provideDeviceConsumer() {
+        return new NotificationConsumer();
     }
 
     private Connection provideRabbitConnection() throws IOException, TimeoutException {
@@ -83,24 +92,28 @@ public class RabbitConfig {
         return factory.newConnection();
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitDeviceNotificationProducer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideDeviceNotProducer() throws IOException, TimeoutException {
         return provideCommonConfig("device_notification", "device_n");
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitCommandUpdateNotificationProducer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideCommandUpdateNotProducer() throws IOException, TimeoutException {
         return provideCommonConfig("command_update_notification", "command_u_n");
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitCommandNotificationProducer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideCommandNotProducer() throws IOException, TimeoutException {
         return provideCommonConfig("command_notification", "command_n");
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitDeviceNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideDeviceNotConsumer() throws IOException, TimeoutException {
@@ -109,6 +122,7 @@ public class RabbitConfig {
         return channel;
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitCommandUpdateNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideCommandUpdateNotConsumer() throws IOException, TimeoutException {
@@ -117,6 +131,7 @@ public class RabbitConfig {
         return channel;
     }
 
+    @Profile({"!test"})
     @Bean(name = "rabbitCommandNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
     public Channel provideCommandNotConsumer() throws IOException, TimeoutException {
@@ -125,7 +140,7 @@ public class RabbitConfig {
         return channel;
     }
 
-    private <T> void provideCommonConsumerConfig(Channel channel, String queue, IRabbitConsumer<T> consumer, EntityToByteConverter<T> converter) throws IOException {
+    private <T> void provideCommonConsumerConfig(Channel channel, String queue, IConsumer consumer, EntityToByteConverter<T> converter) throws IOException {
         Consumer defaultConsumer = new DefaultConsumer(channel) {
 
             @Override

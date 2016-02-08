@@ -1,8 +1,6 @@
 package com.devicehive.messages.bus;
 
-import com.devicehive.configuration.Constants;
-import com.devicehive.messages.kafka.IRabbitProducer;
-import com.devicehive.messages.kafka.KafkaProducer;
+import com.devicehive.messages.common.IProducer;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import com.devicehive.model.HazelcastEntity;
@@ -20,23 +18,17 @@ public class MessageBus {
     public static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MessageBus.class);
 
     @Autowired
-    private KafkaProducer kafkaProducer;
-
-    @Autowired
-    private IRabbitProducer rabbitProducer;
+    private IProducer producer;
 
     public <T extends HazelcastEntity> void publish(T hzEntity) {
         if (hzEntity instanceof DeviceNotification) {
-            rabbitProducer.produceDeviceNotificationMsg((DeviceNotification) hzEntity);
-            kafkaProducer.produceDeviceNotificationMsg((DeviceNotification) hzEntity, Constants.NOTIFICATION_TOPIC_NAME);
+            producer.produceDeviceNotificationMsg((DeviceNotification) hzEntity);
         } else if (hzEntity instanceof DeviceCommand) {
             DeviceCommand command = (DeviceCommand) hzEntity;
             if (command.getIsUpdated()) {
-                rabbitProducer.produceDeviceCommandUpdateMsg(command);
-                kafkaProducer.produceDeviceCommandUpdateMsg(command, Constants.COMMAND_UPDATE_TOPIC_NAME);
+                producer.produceDeviceCommandUpdateMsg(command);
             } else {
-                rabbitProducer.produceDeviceCommandMsg(command);
-                kafkaProducer.produceDeviceCommandMsg(command, Constants.COMMAND_TOPIC_NAME);
+                producer.produceDeviceCommandMsg(command);
             }
         } else {
             final String msg = String.format("Unsupported hazelcast entity class: %s", hzEntity.getClass());

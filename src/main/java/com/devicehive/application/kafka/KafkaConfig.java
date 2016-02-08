@@ -1,10 +1,10 @@
 package com.devicehive.application.kafka;
 
 import com.devicehive.configuration.Constants;
-import com.devicehive.messages.kafka.AbstractConsumer;
-import com.devicehive.messages.kafka.CommandConsumer;
-import com.devicehive.messages.kafka.CommandUpdateConsumer;
-import com.devicehive.messages.kafka.NotificationConsumer;
+import com.devicehive.messages.kafka.AbstractKafkaConsumer;
+import com.devicehive.messages.kafka.CommandKafkaConsumer;
+import com.devicehive.messages.kafka.CommandUpdateKafkaConsumer;
+import com.devicehive.messages.kafka.NotificationKafkaConsumer;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import com.devicehive.websockets.converters.DeviceCommandConverter;
@@ -53,20 +53,20 @@ public class KafkaConfig {
 
     @Bean
     @Scope("prototype")
-    public NotificationConsumer notificationConsumer() {
-        return new NotificationConsumer();
+    public NotificationKafkaConsumer notificationConsumer() {
+        return new NotificationKafkaConsumer();
     }
 
     @Bean
     @Scope("prototype")
-    public CommandConsumer commandConsumer() {
-        return new CommandConsumer();
+    public CommandKafkaConsumer commandConsumer() {
+        return new CommandKafkaConsumer();
     }
 
     @Bean
     @Scope("prototype")
-    public CommandUpdateConsumer commandUpdateConsumer() {
-        return new CommandUpdateConsumer();
+    public CommandUpdateKafkaConsumer commandUpdateConsumer() {
+        return new CommandUpdateKafkaConsumer();
     }
 
     @Profile({"!test"})
@@ -122,7 +122,7 @@ public class KafkaConfig {
                 new DeviceCommandConverter(new VerifiableProperties()));
     }
 
-    private <T> ConsumerConnector createAndSubscribe(String groupId, String topicName, Supplier<AbstractConsumer<T>> consumerCreator, Decoder<T> decoder) {
+    private <T> ConsumerConnector createAndSubscribe(String groupId, String topicName, Supplier<AbstractKafkaConsumer<T>> consumerCreator, Decoder<T> decoder) {
         Properties properties = consumerSharedProps();
         properties.put(Constants.GROOP_ID, groupId);
         ConsumerConnector connector = Consumer.createJavaConsumerConnector(new ConsumerConfig(properties));
@@ -136,7 +136,7 @@ public class KafkaConfig {
 
         int thread = 0;
         for (final KafkaStream sm : stream) {
-            AbstractConsumer<T> consumer = consumerCreator.get();
+            AbstractKafkaConsumer<T> consumer = consumerCreator.get();
             logger.info("Subscribing to topic {}, thread {}, consumer {}", topicName, thread, consumer.toString());
             consumer.subscribe(sm, thread);
             thread++;

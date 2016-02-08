@@ -1,5 +1,6 @@
-package com.devicehive.messages.kafka;
+package com.devicehive.messages.rabbit;
 
+import com.devicehive.messages.common.IProducer;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import com.rabbitmq.client.Channel;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,8 +18,7 @@ import java.io.IOException;
  * Author: Y. Vovk
  * 05.02.16.
  */
-@Component
-public class DefaultRabbitProducer implements IRabbitProducer {
+public class DefaultRabbitProducer implements IProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRabbitProducer.class);
 

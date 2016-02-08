@@ -1,5 +1,8 @@
 package com.devicehive.application;
 
+import com.devicehive.messages.common.IProducer;
+import com.devicehive.messages.kafka.DefaultKafkaProducer;
+import com.devicehive.messages.rabbit.DefaultRabbitProducer;
 import io.swagger.jaxrs.config.BeanConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -8,10 +11,9 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.boot.orm.jpa.EntityScan;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.*;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -21,7 +23,7 @@ import javax.validation.Validator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SpringBootApplication(exclude = { JacksonAutoConfiguration.class })
+@SpringBootApplication(exclude = {JacksonAutoConfiguration.class})
 @ComponentScan("com.devicehive")
 @EnableTransactionManagement(proxyTargetClass = true)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -32,7 +34,10 @@ public class DeviceHiveApplication extends SpringBootServletInitializer {
 
     public static final String MESSAGE_EXECUTOR = "DeviceHiveMessageService";
 
-    public static void main(String ... args) {
+    @Value("${message.broker:1}")
+    private Integer messageBroker;
+
+    public static void main(String... args) {
         SpringApplication.run(DeviceHiveApplication.class);
     }
 
@@ -50,6 +55,20 @@ public class DeviceHiveApplication extends SpringBootServletInitializer {
     @Bean(name = MESSAGE_EXECUTOR)
     public ExecutorService messageExecutorService(@Value("${app.executor.size}") Integer executorSize) {
         return Executors.newFixedThreadPool(executorSize);
+    }
+
+    @Profile({"!test"})
+    @Lazy(false)
+    @Bean
+    public IProducer provideProducer() {
+        switch (messageBroker) {
+            case 1:
+                return new DefaultKafkaProducer();
+            case 2:
+                return new DefaultRabbitProducer();
+            default:
+                return new DefaultKafkaProducer();
+        }
     }
 
     @Bean

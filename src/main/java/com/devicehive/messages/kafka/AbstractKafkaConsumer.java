@@ -1,6 +1,7 @@
 package com.devicehive.messages.kafka;
 
 import com.devicehive.application.DeviceHiveApplication;
+import com.devicehive.messages.common.IConsumer;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import org.slf4j.Logger;
@@ -10,8 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 /**
  * Created by tmatvienko on 1/29/15.
  */
-public abstract class AbstractConsumer<T> {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConsumer.class);
+public abstract class AbstractKafkaConsumer<T> implements IConsumer<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractKafkaConsumer.class);
 
     @Async(DeviceHiveApplication.MESSAGE_EXECUTOR)
     public void subscribe(KafkaStream a_stream, int a_threadNumber) {
@@ -26,5 +28,4 @@ public abstract class AbstractConsumer<T> {
         logger.info("Shutting down Thread: " + a_threadNumber);
     }
 
-    public abstract void submitMessage(T message);
 }

@@ -1,15 +1,13 @@
-package com.devicehive.messages.kafka;
+package com.devicehive.messages.common;
 
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 
-import java.io.IOException;
-
 /**
  * Author: Y. Vovk
- * 05.02.16.
+ * 08.02.16.
  */
-public interface IRabbitProducer {
+public interface IProducer {
 
     void produceDeviceNotificationMsg(DeviceNotification message);
 

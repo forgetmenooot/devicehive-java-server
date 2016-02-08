@@ -33,7 +33,7 @@
         <appender-ref ref="STDOUT"/>
     </appender>
 
-    <logger name="com.devicehive.messages.kafka.AbstractConsumer" level="INFO">
+    <logger name="com.devicehive.messages.kafka.AbstractKafkaConsumer" level="INFO">
         <appender-ref ref="ASYNC"/>
     </logger>
 

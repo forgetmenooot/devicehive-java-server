@@ -1,4 +1,4 @@
-package com.devicehive.messages.kafka;
+package com.devicehive.messages.common;
 
 import com.devicehive.application.DeviceHiveApplication;
 import com.devicehive.configuration.Constants;
@@ -16,9 +16,9 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Author: Y. Vovk
- * 05.02.16.
+ * 08.02.16.
  */
-public class RabbitNotificationConsumer implements IRabbitConsumer<DeviceNotification> {
+public class NotificationConsumer implements IConsumer<DeviceNotification> {
 
     @Autowired
     private SubscriptionManager subscriptionManager;

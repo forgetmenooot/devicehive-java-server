@@ -1,4 +1,4 @@
-package com.devicehive.messages.kafka;
+package com.devicehive.messages.rabbit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

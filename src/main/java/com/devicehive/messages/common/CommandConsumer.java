@@ -1,4 +1,4 @@
-package com.devicehive.messages.kafka;
+package com.devicehive.messages.common;
 
 import com.devicehive.application.DeviceHiveApplication;
 import com.devicehive.configuration.Constants;
@@ -17,22 +17,26 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by tmatvienko on 1/29/15.
+ * Author: Y. Vovk
+ * 08.02.16.
  */
-public class CommandConsumer extends AbstractConsumer<DeviceCommand> {
-    private static final Logger logger = LoggerFactory.getLogger(CommandConsumer.class);
+public class CommandConsumer implements IConsumer<DeviceCommand> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandConsumer.class);
 
     @Autowired
     private SubscriptionManager subscriptionManager;
+
     @Autowired
     private DeviceService deviceService;
+
     @Autowired
     @Qualifier(DeviceHiveApplication.MESSAGE_EXECUTOR)
     private ExecutorService mes;
 
     @Override
     public void submitMessage(final DeviceCommand message) {
-        logger.debug("Device command was submitted: {}", message);
+        LOGGER.debug("Device command was submitted: {}", message);
 
         Set<UUID> subscribersIds = new HashSet<>();
         Set<CommandSubscription> subs = subscriptionManager.getCommandSubscriptionStorage()
@@ -40,13 +44,13 @@ public class CommandConsumer extends AbstractConsumer<DeviceCommand> {
         for (CommandSubscription subscription : subs) {
             if (subscription.getCommandNames() != null &&
                     !subscription.getCommandNames().contains(message.getCommand())) {
-                logger.debug("Skipping subscriber {}, Command name {} is not in subscription list {}",
+                LOGGER.debug("Skipping subscriber {}, Command name {} is not in subscription list {}",
                         subscription.getPrincipal().getName(), message.getCommand(), subscription.getCommandNames());
                 continue;
             }
             boolean hasAccess = deviceService.hasAccessTo(subscription.getPrincipal(), message.getDeviceGuid());
             if (hasAccess) {
-                logger.debug("Sending command {} to user {}..", message, subscription.getPrincipal().getName());
+                LOGGER.debug("Sending command {} to user {}..", message, subscription.getPrincipal().getName());
                 mes.submit(subscription.getHandlerCreator().getHandler(message, subscription.getSubscriptionId()));
             }
             subscribersIds.add(subscription.getSubscriptionId());

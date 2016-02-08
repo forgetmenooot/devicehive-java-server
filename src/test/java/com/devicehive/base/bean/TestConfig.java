@@ -1,6 +1,6 @@
 package com.devicehive.base.bean;
 
-import com.devicehive.messages.kafka.KafkaProducer;
+import com.devicehive.messages.common.IProducer;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,7 @@ import org.springframework.core.env.Environment;
 @Profile({"test"})
 @Configuration
 public class TestConfig {
+
     private static final Logger logger = LoggerFactory.getLogger(TestConfig.class);
 
     @Value("${metadata.broker.list}")
@@ -23,7 +24,7 @@ public class TestConfig {
     private Environment env;
 
     @Bean
-    public KafkaProducer kafkaProducer() {
+    public IProducer kafkaProducer() {
         return Mockito.spy(new TestKafkaProducer());
     }
 

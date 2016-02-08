@@ -1,6 +1,8 @@
 package com.devicehive.messages.kafka;
 
 import com.devicehive.application.kafka.KafkaConfig;
+import com.devicehive.configuration.Constants;
+import com.devicehive.messages.common.IProducer;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import kafka.javaapi.producer.Producer;
@@ -13,9 +15,7 @@ import org.springframework.stereotype.Component;
 /**
  * Created by tmatvienko on 12/24/14.
  */
-@Profile("!test")
-@Component
-public class DefaultKafkaProducer implements KafkaProducer {
+public class DefaultKafkaProducer implements IProducer {
 
     @Autowired
     @Qualifier(KafkaConfig.NOTIFICATION_PRODUCER)
@@ -26,18 +26,18 @@ public class DefaultKafkaProducer implements KafkaProducer {
     private Producer<String, DeviceCommand> commandProducer;
 
     @Override
-    public void produceDeviceNotificationMsg(DeviceNotification message, String deviceNotificationTopicName) {
-        notificationProducer.send(new KeyedMessage<>(deviceNotificationTopicName, message.getDeviceGuid(), message));
+    public void produceDeviceNotificationMsg(DeviceNotification message) {
+        notificationProducer.send(new KeyedMessage<>(Constants.NOTIFICATION_TOPIC_NAME, message.getDeviceGuid(), message));
     }
 
     @Override
-    public void produceDeviceCommandMsg(DeviceCommand message, String deviceCommandTopicName) {
-        commandProducer.send(new KeyedMessage<>(deviceCommandTopicName, message.getDeviceGuid(), message));
+    public void produceDeviceCommandMsg(DeviceCommand message) {
+        commandProducer.send(new KeyedMessage<>(Constants.COMMAND_TOPIC_NAME, message.getDeviceGuid(), message));
     }
 
     @Override
-    public void produceDeviceCommandUpdateMsg(DeviceCommand message, String deviceCommandTopicName) {
-        commandProducer.send(new KeyedMessage<>(deviceCommandTopicName, message.getDeviceGuid(), message));
+    public void produceDeviceCommandUpdateMsg(DeviceCommand message) {
+        commandProducer.send(new KeyedMessage<>(Constants.COMMAND_UPDATE_TOPIC_NAME, message.getDeviceGuid(), message));
     }
 
 }
