@@ -28,6 +28,7 @@ import org.springframework.core.env.Environment;
 import java.util.*;
 import java.util.function.Supplier;
 
+@Profile("1")
 @Configuration
 public class KafkaConfig {
     private static final Logger logger = LoggerFactory.getLogger(KafkaConfig.class);

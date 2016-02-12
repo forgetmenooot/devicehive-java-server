@@ -1,9 +1,6 @@
 package com.devicehive.application.rabbit;
 
-import com.devicehive.messages.common.CommandConsumer;
-import com.devicehive.messages.common.CommandUpdateConsumer;
-import com.devicehive.messages.common.IConsumer;
-import com.devicehive.messages.common.NotificationConsumer;
+import com.devicehive.messages.common.*;
 import com.devicehive.messages.kafka.*;
 import com.devicehive.messages.rabbit.*;
 import com.devicehive.model.DeviceCommand;
@@ -24,6 +21,7 @@ import java.util.concurrent.TimeoutException;
  * Author: Y. Vovk
  * 05.02.16.
  */
+@Profile("2")
 @Configuration
 public class RabbitConfig {
 
@@ -49,36 +47,16 @@ public class RabbitConfig {
     private Integer recoverInterval;
 
     @Autowired
-    private EntityToByteConverter<DeviceCommand> deviceCommandEntityToByteConverter;
+    private JsonDeviceNotificationConverter deviceNotificationConverter;
 
     @Autowired
-    private EntityToByteConverter<DeviceNotification> deviceNotificationEntityToByteConverter;
+    private JsonCommandNotificationConverter commandNotificationConverter;
 
+
+    @Profile({"!test"})
     @Bean
     @Lazy(false)
-    public EntityToByteConverter provideConverter() {
-        return new EntityToByteConverter();
-    }
-
-    @Bean(name="commandUpdateNotificationConsumer")
-    @Lazy(false)
-    public IConsumer provideCommandUpdateConsumer() {
-        return new CommandUpdateConsumer();
-    }
-
-    @Bean(name="commandNotificationConsumer")
-    @Lazy(false)
-    public IConsumer provideCommandConsumer() {
-        return new CommandConsumer();
-    }
-
-    @Bean(name="deviceNotificationConsumer")
-    @Lazy(false)
-    public IConsumer provideDeviceConsumer() {
-        return new NotificationConsumer();
-    }
-
-    private Connection provideRabbitConnection() throws IOException, TimeoutException {
+    public Connection provideRabbitConnection() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUsername(username);
         factory.setPassword(password);
@@ -116,31 +94,31 @@ public class RabbitConfig {
     @Profile({"!test"})
     @Bean(name = "rabbitDeviceNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
-    public Channel provideDeviceNotConsumer() throws IOException, TimeoutException {
+    public Channel provideDeviceNotConsumer(IConsumer<DeviceNotification> deviceNotificationConsumer) throws IOException, TimeoutException {
         Channel channel = provideCommonConfig("device_notification", "device_n");
-        provideCommonConsumerConfig(channel, "device_notification", provideDeviceConsumer(), deviceNotificationEntityToByteConverter);
+        provideCommonConsumerConfig(channel, "device_notification", deviceNotificationConsumer, deviceNotificationConverter);
         return channel;
     }
 
     @Profile({"!test"})
     @Bean(name = "rabbitCommandUpdateNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
-    public Channel provideCommandUpdateNotConsumer() throws IOException, TimeoutException {
+    public Channel provideCommandUpdateNotConsumer(IConsumer<DeviceCommand> commandUpdateNotificationConsumer) throws IOException, TimeoutException {
         Channel channel = provideCommonConfig("command_update_notification", "command_u_n");
-        provideCommonConsumerConfig(channel, "command_update_notification", provideCommandUpdateConsumer(), deviceCommandEntityToByteConverter);
+        provideCommonConsumerConfig(channel, "command_update_notification", commandUpdateNotificationConsumer, commandNotificationConverter);
         return channel;
     }
 
     @Profile({"!test"})
     @Bean(name = "rabbitCommandNotificationConsumer", destroyMethod = "close")
     @Lazy(false)
-    public Channel provideCommandNotConsumer() throws IOException, TimeoutException {
+    public Channel provideCommandNotConsumer(IConsumer<DeviceCommand> commandNotificationConsumer) throws IOException, TimeoutException {
         Channel channel = provideCommonConfig("command_notification", "command_n");
-        provideCommonConsumerConfig(channel, "command_notification", provideCommandUpdateConsumer(), deviceCommandEntityToByteConverter);
+        provideCommonConsumerConfig(channel, "command_notification", commandNotificationConsumer, commandNotificationConverter);
         return channel;
     }
 
-    private <T> void provideCommonConsumerConfig(Channel channel, String queue, IConsumer consumer, EntityToByteConverter<T> converter) throws IOException {
+    private <T> void provideCommonConsumerConfig(Channel channel, String queue, IConsumer consumer, JsonConverter<T> converter) throws IOException {
         Consumer defaultConsumer = new DefaultConsumer(channel) {
 
             @Override

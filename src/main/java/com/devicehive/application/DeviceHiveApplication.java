@@ -1,9 +1,13 @@
 package com.devicehive.application;
 
+import com.devicehive.application.hazelcast.CuratorConfiguration;
+import com.devicehive.application.kafka.KafkaConfig;
+import com.devicehive.application.rabbit.RabbitConfig;
 import com.devicehive.messages.common.IProducer;
 import com.devicehive.messages.kafka.DefaultKafkaProducer;
 import com.devicehive.messages.rabbit.DefaultRabbitProducer;
 import io.swagger.jaxrs.config.BeanConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,6 +17,7 @@ import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -24,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @SpringBootApplication(exclude = {JacksonAutoConfiguration.class})
-@ComponentScan("com.devicehive")
+@ComponentScan(basePackages = { "com.devicehive" })
 @EnableTransactionManagement(proxyTargetClass = true)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EntityScan(basePackages = {"com.devicehive.model"})
@@ -33,6 +38,9 @@ import java.util.concurrent.Executors;
 public class DeviceHiveApplication extends SpringBootServletInitializer {
 
     public static final String MESSAGE_EXECUTOR = "DeviceHiveMessageService";
+
+    @Autowired
+    private Environment env;
 
     @Value("${message.broker:1}")
     private Integer messageBroker;
@@ -60,11 +68,11 @@ public class DeviceHiveApplication extends SpringBootServletInitializer {
     @Profile({"!test"})
     @Lazy(false)
     @Bean
-    public IProducer provideProducer() {
-        switch (messageBroker) {
-            case 1:
+    public IProducer provideMessageBroker() {
+        switch (env.getActiveProfiles()[0]) {
+            case "1":
                 return new DefaultKafkaProducer();
-            case 2:
+            case "2":
                 return new DefaultRabbitProducer();
             default:
                 return new DefaultKafkaProducer();

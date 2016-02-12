@@ -1,6 +1,9 @@
 package com.devicehive.messages.rabbit;
 
+import com.devicehive.messages.common.EntityToByteConverter;
 import com.devicehive.messages.common.IProducer;
+import com.devicehive.messages.common.JsonCommandNotificationConverter;
+import com.devicehive.messages.common.JsonDeviceNotificationConverter;
 import com.devicehive.model.DeviceCommand;
 import com.devicehive.model.DeviceNotification;
 import com.rabbitmq.client.Channel;
@@ -35,15 +38,15 @@ public class DefaultRabbitProducer implements IProducer {
     private Channel commandUpdateProducer;
 
     @Autowired
-    private EntityToByteConverter<DeviceCommand> deviceCommandEntityToByteConverter;
+    private JsonDeviceNotificationConverter deviceNotificationConverter;
 
     @Autowired
-    private EntityToByteConverter<DeviceNotification> deviceNotificationEntityToByteConverter;
+    private JsonCommandNotificationConverter commandNotificationConverter;
 
     @Override
     public void produceDeviceNotificationMsg(DeviceNotification message) {
         try {
-            notificationProducer.basicPublish("devicehive", "device_n", MessageProperties.PERSISTENT_TEXT_PLAIN, deviceNotificationEntityToByteConverter.toBytes(message));
+            notificationProducer.basicPublish("devicehive", "device_n", MessageProperties.PERSISTENT_TEXT_PLAIN, deviceNotificationConverter.toBytes(message));
         } catch (IOException e) {
             LOGGER.error("Unable to publish device notification due to encoding to bytes", e);
         }
@@ -52,7 +55,7 @@ public class DefaultRabbitProducer implements IProducer {
     @Override
     public void produceDeviceCommandMsg(DeviceCommand message) {
         try {
-            commandProducer.basicPublish("devicehive", "command_n", MessageProperties.PERSISTENT_TEXT_PLAIN, deviceCommandEntityToByteConverter.toBytes(message));
+            commandProducer.basicPublish("devicehive", "command_n", MessageProperties.PERSISTENT_TEXT_PLAIN, commandNotificationConverter.toBytes(message));
         } catch (IOException e) {
             LOGGER.error("Unable to publish command notification due to encoding to bytes", e);
         }
@@ -61,7 +64,7 @@ public class DefaultRabbitProducer implements IProducer {
     @Override
     public void produceDeviceCommandUpdateMsg(DeviceCommand message) {
         try {
-            commandUpdateProducer.basicPublish("devicehive", "command_u_n", MessageProperties.PERSISTENT_TEXT_PLAIN, deviceCommandEntityToByteConverter.toBytes(message));
+            commandUpdateProducer.basicPublish("devicehive", "command_u_n", MessageProperties.PERSISTENT_TEXT_PLAIN, commandNotificationConverter.toBytes(message));
         } catch (IOException e) {
             LOGGER.error("Unable to publish command update notification due to encoding to bytes", e);
         }

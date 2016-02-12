@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.InetAddress;
 
-@Configuration
+//@Configuration
 public class CuratorConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "close")

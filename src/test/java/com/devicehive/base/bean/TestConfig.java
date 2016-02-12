@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
-@Profile({"test"})
+@Profile({"test", "1"})
 @Configuration
 public class TestConfig {
 

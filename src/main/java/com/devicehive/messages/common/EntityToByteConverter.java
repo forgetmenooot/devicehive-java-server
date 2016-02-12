@@ -1,4 +1,4 @@
-package com.devicehive.messages.rabbit;
+package com.devicehive.messages.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
