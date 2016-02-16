@@ -2,11 +2,11 @@ package com.devicehive.application;
 
 import com.devicehive.application.hazelcast.CuratorConfiguration;
 import com.devicehive.application.kafka.KafkaConfig;
-import com.devicehive.application.rabbit.RabbitConfig;
 import com.devicehive.messages.common.IProducer;
 import com.devicehive.messages.kafka.DefaultKafkaProducer;
-import com.devicehive.messages.rabbit.DefaultRabbitProducer;
+import com.devicehive.messages.rabbit.SpringRabbitProducer;
 import io.swagger.jaxrs.config.BeanConfig;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -21,6 +21,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
@@ -34,6 +35,8 @@ import java.util.concurrent.Executors;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EntityScan(basePackages = {"com.devicehive.model"})
 @EnableScheduling
+@EnableRabbit
+
 @EnableAsync(proxyTargetClass = true)
 public class DeviceHiveApplication extends SpringBootServletInitializer {
 
@@ -73,7 +76,7 @@ public class DeviceHiveApplication extends SpringBootServletInitializer {
             case "1":
                 return new DefaultKafkaProducer();
             case "2":
-                return new DefaultRabbitProducer();
+                return new SpringRabbitProducer();
             default:
                 return new DefaultKafkaProducer();
         }

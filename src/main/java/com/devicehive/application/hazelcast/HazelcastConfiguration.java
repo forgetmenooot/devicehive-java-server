@@ -78,10 +78,8 @@ public class HazelcastConfiguration {
 
 
     @Bean
-    public TcpIpConfig tcpIpConfig(ApplicationContext context) throws Exception {
+    public TcpIpConfig tcpIpConfig() throws Exception {
         final TcpIpConfig tcpIpConfig = new TcpIpConfig();
-//        final List<String> instances = queryOtherInstancesInZk(context.getId(), serviceDiscovery);
-//        tcpIpConfig.setMembers(instances);
         tcpIpConfig.setEnabled(true);
         return tcpIpConfig;
     }
@@ -94,12 +92,4 @@ public class HazelcastConfiguration {
         return join;
     }
 
-    private List<String> queryOtherInstancesInZk(String name, ServiceDiscovery<Void> serviceDiscovery) throws Exception {
-        List<String> list = serviceDiscovery
-                .queryForInstances(name)
-                .stream()
-                .map(ServiceInstance::buildUriSpec)
-                .collect(Collectors.toList());
-        return list;
-    }
 }

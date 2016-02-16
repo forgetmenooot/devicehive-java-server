@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.InetAddress;
 
-//@Configuration
 public class CuratorConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "close")
@@ -34,14 +33,12 @@ public class CuratorConfiguration {
     }
 
     @Bean
-    ServiceInstance<Void> serviceInstance(@Value("${hazelcast.port}") int port, ApplicationContext applicationContext,
-                                          CuratorFramework curatorFramework) throws Exception {
-        final String hostName = InetAddress.getLocalHost().getHostName();
+    ServiceInstance<Void> serviceInstance(@Value("${hazelcast.port}") int port, ApplicationContext applicationContext) throws Exception {
         return ServiceInstance
                 .<Void>builder()
                 .name(applicationContext.getId())
                 .uriSpec(new UriSpec("{address}:{port}"))
-                .address(hostName)
+                .address(InetAddress.getLocalHost().getHostName())
                 .port(port)
                 .build();
     }

@@ -42,7 +42,7 @@
         <appender-ref ref="ASYNC"/>
     </logger>
 
-    <logger name="com.devicehive" level="DEBUG" additivity="false">
+    <logger name="com.devicehive" level="INFO" additivity="false">
         <appender-ref ref="ASYNC"/>
     </logger>
 
